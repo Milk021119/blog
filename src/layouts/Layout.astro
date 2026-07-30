@@ -1,0 +1,175 @@
+﻿---
+import { site, nav, isNavActive } from '../site';
+import CircularText from '../components/CircularText.astro';
+import TargetCursor from '../components/TargetCursor.astro';
+import Sidebar from '../components/Sidebar.astro';
+import PillNav from '../components/PillNav.jsx';
+
+interface Props {
+  title?: string;
+  description?: string;
+  headings?: { depth: number; slug: string; text: string }[];
+}
+
+const {
+  title = site.name,
+  description = site.description,
+  headings = [],
+} = Astro.props;
+
+const siteName = site.name;
+const runningDays = Math.max(1, Math.floor((Date.now() - new Date(site.launchDate).getTime()) / 86400000));
+const year = new Date().getFullYear();
+
+const path = Astro.url.pathname;
+const activeNavHref = nav.find((item) => isNavActive(item.href, path))?.href ?? '';
+const canonical = Astro.site ? new URL(path, Astro.site).href : undefined;
+---
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title={site.name} href="/rss.xml" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <title>{title}</title>
+    <!-- diygod.cc 原版样式 -->
+    <link rel="stylesheet" href="/_astro/_slug_.BO2eiwd2.css" />
+    <link rel="stylesheet" href="/_astro/_slug_.CdTi_Fns.css" />
+    <!-- 防昼夜闪烁：首帧前恢复 dark class -->
+    <script is:inline>
+      try {
+        const m = localStorage.getItem('blog:mode');
+        if (m === 'dark' || (!m && matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+        }
+      } catch (e) {}
+    </script>
+  </head>
+  <body class="antialiased bg-white dark:bg-neutral-950">
+    <TargetCursor />
+    <Sidebar headings={headings} />
+    <!-- 左侧背景网格装饰（原版） -->
+    <div class="absolute w-full h-auto" style="z-index:-1">
+      <div class="absolute top-0 left-0 w-1/2 h-auto bg-neutral-100 dark:bg-neutral-800">
+        <div class="absolute inset-0 z-30 w-full h-full pointer-events-none bg-gradient-to-tl from-white dark:from-neutral-950 from-50% via-90% to-100% via-transparent to-transparent"></div>
+        <div class="flex flex-col w-full h-full border-t border-l divide-y divide-dashed divide-neutral-300 dark:divide-neutral-700 border-neutral-300 dark:border-neutral-900">
+          {Array.from({ length: 6 }).map(() => (
+            <div class="relative flex w-full divide-x h-[30px] sm:h-[45px] md:h-[60px] xl:h-[88px] divide-neutral-300 dark:divide-neutral-700 divide-dashed">
+              {Array.from({ length: 6 }).map(() => (
+                <div class="w-full h-auto bg-white dark:bg-neutral-950 aspect-square"></div>
+              ))}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <!-- Header：左上角圆形文字 Logo + 右侧导航（下滑变悬浮胶囊） -->
+    <header id="header" class="fixed top-0 z-50 w-full h-20">
+      <div class="flex items-center justify-between h-full max-w-5xl pl-6 pr-4 mx-auto border-b border-l-0 border-r-0 border-transparent select-none lg:border-r lg:border-l lg:rounded-b-xl">
+        <a href="/" class="relative z-30 flex items-center gap-2 text-black dark:text-white group" aria-label={siteName}>
+          <CircularText text={`MILK • BLOG • `} size={48} spinDuration={12} />
+          <span class="hidden sm:block font-semibold text-base leading-tight">
+            <span class="block text-nowrap">Hi, {siteName}</span>
+          </span>
+        </a>
+        <nav class="relative z-30 flex justify-start w-full text-sm sm:justify-end text-neutral-500 dark:text-neutral-400 sm:flex-row">
+          <PillNav client:load items={nav} activeHref={activeNavHref} />
+          <!-- 昼夜切换（Day/Night 原版） -->
+          <div id="darkToggle" class="relative items-center pl-6 ml-4 font-medium tracking-wide cursor-pointer text-neutral-800 group dark:text-white flex">
+            <div class="absolute left-0 flex items-center justify-center w-6 h-6 overflow-hidden border-b border-transparent horizon group-hover:border-neutral-600">
+              <svg id="sun" class="absolute w-6 h-6 transition duration-700 transform ease" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+              <svg id="moon" class="absolute hidden w-6 h-6 transition duration-700 transform ease" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor"><path d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+            </div>
+            <span class="hidden sm:inline-block">
+              <span id="dayText" class="ml-2">Day mode</span>
+              <span id="nightText" class="hidden ml-2">Night mode</span>
+            </span>
+          </div>
+        </nav>
+      </div>
+    </header>
+
+    <!-- 主内容 -->
+    <main class="relative z-30 max-w-4xl min-h-screen pb-1 mx-auto mt-24 bg-transparent sm:mt-28">
+      <slot />
+    </main>
+
+    <!-- Footer（原版） -->
+    <footer class="relative z-30 max-w-4xl pt-10 pb-8 mx-auto mt-10 border-t border-dashed border-neutral-300 dark:border-neutral-700 text-center">
+      <div class="font-bold text-neutral-900 dark:text-neutral-100">Hi, {siteName}</div>
+      <div class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">已运行 <b class="font-mono text-orange-500">{runningDays}</b> 天</div>
+      <div class="mt-1 text-xs text-neutral-400 dark:text-neutral-500">© {year} {siteName} · <a href="/sitemap-index.xml" class="hover:text-orange-500">Sitemap</a></div>
+    </footer>
+
+    <!-- 下滑悬浮胶囊样式 -->
+    <style is:global>
+      #header,
+      #header > div {
+        transition: height 0.3s ease, margin 0.3s ease, max-width 0.3s ease,
+          border-radius 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease,
+          border-color 0.3s ease;
+      }
+      #header.header-scrolled {
+        height: 4rem;
+      }
+      #header.header-scrolled > div {
+        margin-top: 0.75rem;
+        height: calc(100% - 0.75rem);
+        max-width: 56rem;
+        border: 1px solid var(--color-neutral-200);
+        border-radius: 9999px;
+        background: rgb(255 255 255 / 0.85);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        box-shadow: 0 4px 24px rgb(0 0 0 / 0.06);
+      }
+      .dark #header.header-scrolled > div {
+        background: rgb(10 10 10 / 0.8);
+        border-color: var(--color-neutral-800);
+        box-shadow: 0 4px 24px rgb(0 0 0 / 0.4);
+      }
+    </style>
+
+    <!-- 昼夜切换逻辑 + 下滑悬浮胶囊切换 -->
+    <script is:inline>
+      (() => {
+        const header = document.getElementById('header');
+        const onScroll = () => header.classList.toggle('header-scrolled', window.scrollY > 40);
+        addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+
+        const toggle = document.getElementById('darkToggle');
+        const sun = document.getElementById('sun');
+        const moon = document.getElementById('moon');
+        const dayText = document.getElementById('dayText');
+        const nightText = document.getElementById('nightText');
+        const sync = () => {
+          const dark = document.documentElement.classList.contains('dark');
+          sun?.classList.toggle('hidden', dark);
+          moon?.classList.toggle('hidden', !dark);
+          dayText?.classList.toggle('hidden', dark);
+          nightText?.classList.toggle('hidden', !dark);
+        };
+        toggle?.addEventListener('click', () => {
+          const dark = document.documentElement.classList.toggle('dark');
+          try { localStorage.setItem('blog:mode', dark ? 'dark' : 'light'); } catch (e) {}
+          sync();
+        });
+        sync();
+      })();
+    </script>
+  </body>
+</html>

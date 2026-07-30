@@ -1,0 +1,80 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import PostItem from '../components/PostItem.astro';
+import FilterPills from '../components/FilterPills.tsx';
+import { site } from '../site';
+
+const all = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+
+const catsMap = new Map<string, number>();
+all.forEach((p) => catsMap.set(p.data.category, (catsMap.get(p.data.category) ?? 0) + 1));
+const cats = [...catsMap].map(([name, count]) => ({
+  label: name,
+  count,
+  href: `/category/${encodeURIComponent(name)}`
+}));
+
+const tagsMap = new Map<string, number>();
+all.forEach((p) => p.data.tags.forEach((t: string) => tagsMap.set(t, (tagsMap.get(t) ?? 0) + 1)));
+const tags = [...tagsMap].map(([name, count]) => ({
+  label: `#${name}`,
+  count,
+  href: `/tag/${encodeURIComponent(name)}`
+}));
+---
+<Layout title={`文章 · ${site.name}`}>
+  <section class="max-w-4xl mx-auto px-7 lg:px-0 my-12">
+    <h2 class="text-2xl font-bold leading-10 tracking-tight text-neutral-900 dark:text-neutral-100">文章</h2>
+
+    <!-- 胶囊筛选 -->
+    <div class="flex flex-col gap-6 mt-4">
+      <FilterPills client:visible title="分类" items={cats} baseHref="/posts" />
+      <FilterPills client:visible title="标签" items={tags} baseHref="/posts" />
+    </div>
+
+    <input
+      id="search-input"
+      type="search"
+      placeholder="搜索关键词"
+      aria-label="搜索文章"
+      class="w-full px-4 py-2 mt-6 text-sm bg-transparent border border-dashed rounded-lg border-neutral-300 dark:border-neutral-700 focus:border-orange-400 outline-none dark:text-neutral-200"
+    />
+    <p id="posts-count" class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">{all.length} 篇文章</p>
+  </section>
+
+  <div class="w-full max-w-4xl mx-auto my-7 xl:px-0 px-7">
+    <div class="flex flex-col items-start justify-start md:flex-row md:space-x-7">
+      <div class="w-full space-y-7" id="posts-list">
+        {all.map((post) => (
+          <div class="post-entry" data-search={`${post.data.title} ${post.data.excerpt}`.toLowerCase()}>
+            <PostItem post={post} />
+          </div>
+        ))}
+      </div>
+    </div>
+    <p id="empty-tip" class="hidden py-16 text-center text-sm text-neutral-400">没有匹配的文章，换个关键词试试。</p>
+  </div>
+
+  <!-- 客户端搜索过滤 -->
+  <script is:inline>
+    (() => {
+      const input = document.getElementById('search-input');
+      const items = [...document.querySelectorAll('.post-entry')];
+      const count = document.getElementById('posts-count');
+      const empty = document.getElementById('empty-tip');
+      input?.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase();
+        let shown = 0;
+        items.forEach((el) => {
+          const hit = !q || el.dataset.search.includes(q);
+          el.classList.toggle('hidden', !hit);
+          if (hit) shown++;
+        });
+        count.textContent = `${shown} 篇文章`;
+        empty.classList.toggle('hidden', shown !== 0);
+      });
+    })();
+  </script>
+</Layout>

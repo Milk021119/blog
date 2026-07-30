@@ -1,0 +1,126 @@
+---
+import { getCollection } from 'astro:content';
+import { nav, isNavActive } from '../site';
+
+interface Props {
+  headings?: { depth: number; slug: string; text: string }[];
+}
+const { headings = [] } = Astro.props;
+const path = Astro.url.pathname;
+const isPost = path.startsWith('/posts/') && headings.length > 0;
+
+let cats: [string, number][] = [];
+if (!isPost) {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  const map = new Map<string, number>();
+  posts.forEach((p) => map.set(p.data.category, (map.get(p.data.category) ?? 0) + 1));
+  cats = [...map];
+}
+
+---
+<aside class="sidebar-toc" aria-label="侧边目录">
+  {isPost ? (
+    <nav class="sidebar-toc__inner">
+      <p class="sidebar-toc__title">本页目录</p>
+      <ul class="sidebar-toc__list" id="toc-list">
+        {headings.map((h) => (
+          <li class:list={[h.depth === 3 && 'is-sub']}>
+            <a href={`#${h.slug}`} data-toc-link={h.slug}>{h.text}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  ) : (
+    <nav class="sidebar-toc__inner">
+      <p class="sidebar-toc__title">导航</p>
+      <ul class="sidebar-toc__list">
+        {nav.map((n) => (
+          <li>
+            <a href={n.href} class:list={[isNavActive(n.href, path) && 'is-active']}>{n.label}</a>
+          </li>
+        ))}
+      </ul>
+      {cats.length > 0 && (
+        <>
+          <p class="sidebar-toc__title mt-6">分类</p>
+          <ul class="sidebar-toc__list">
+            {cats.map(([name, n]) => (
+              <li><a href={`/category/${encodeURIComponent(name)}`}>{name} <span class="toc-count">{n}</span></a></li>
+            ))}
+          </ul>
+        </>
+      )}
+    </nav>
+  )}
+</aside>
+
+<style>
+  /* 固定于左侧，仅 ≥1280px 显示；不与居中内容重叠 */
+  .sidebar-toc {
+    display: none;
+  }
+  @media (min-width: 1280px) {
+    .sidebar-toc {
+      display: block;
+      position: fixed;
+      top: 9rem;
+      left: max(1.5rem, calc(50vw - 42rem));
+      width: 11rem;
+      max-height: calc(100vh - 12rem);
+      overflow-y: auto;
+      z-index: 30;
+    }
+  }
+  .sidebar-toc__inner {
+    border-left: 1px dashed var(--color-neutral-300);
+    padding-left: 1rem;
+  }
+  :global(.dark) .sidebar-toc__inner { border-left-color: var(--color-neutral-700); }
+
+  .sidebar-toc__title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--color-neutral-400);
+    margin-bottom: 0.7rem;
+  }
+  .sidebar-toc__list { display: grid; gap: 0.15rem; }
+  .sidebar-toc__list a {
+    display: block;
+    padding: 0.22rem 0;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: var(--color-neutral-500);
+    transition: color 0.15s ease, padding-left 0.15s ease;
+  }
+  :global(.dark) .sidebar-toc__list a { color: var(--color-neutral-400); }
+  .sidebar-toc__list a:hover { color: var(--color-orange-500); padding-left: 0.3rem; }
+  .sidebar-toc__list a.is-active { color: var(--color-orange-500); font-weight: 600; }
+  .sidebar-toc__list li.is-sub a { padding-left: 0.9rem; font-size: 0.8rem; }
+  .toc-count { color: var(--color-neutral-400); font-size: 0.75rem; }
+</style>
+
+<script is:inline>
+  (() => {
+    const list = document.getElementById('toc-list');
+    if (!list) return;
+    const links = [...list.querySelectorAll('a[data-toc-link]')];
+    const map = new Map(links.map((a) => [a.dataset.tocLink, a]));
+    const heads = links
+      .map((a) => document.getElementById(a.dataset.tocLink))
+      .filter(Boolean);
+    if (!heads.length) return;
+
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((en) => {
+        if (en.isIntersecting) {
+          links.forEach((a) => a.classList.remove('is-active'));
+          map.get(en.target.id)?.classList.add('is-active');
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    heads.forEach((h) => io.observe(h));
+  })();
+</script>

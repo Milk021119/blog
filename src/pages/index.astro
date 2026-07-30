@@ -1,0 +1,96 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../layouts/Layout.astro';
+import PostItem from '../components/PostItem.astro';
+import LogoLoop from '../components/LogoLoop.jsx';
+import FilterPills from '../components/FilterPills.tsx';
+import { projects } from '../data/projects';
+import { site, socials } from '../site';
+
+const socialLogos = socials.map((s) => ({ src: s.icon, alt: s.name, title: s.name, href: s.href }));
+
+const all = (await getCollection('posts', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+const latest = all.slice(0, 7);
+
+const catsMap = new Map<string, number>();
+all.forEach((p) => catsMap.set(p.data.category, (catsMap.get(p.data.category) ?? 0) + 1));
+const cats = [...catsMap].map(([name, count]) => ({
+  label: name,
+  count,
+  href: `/category/${encodeURIComponent(name)}`
+}));
+
+const tagsMap = new Map<string, number>();
+all.forEach((p) => p.data.tags.forEach((t: string) => tagsMap.set(t, (tagsMap.get(t) ?? 0) + 1)));
+const tags = [...tagsMap].map(([name, count]) => ({
+  label: `#${name}`,
+  count,
+  href: `/tag/${encodeURIComponent(name)}`
+}));
+---
+<Layout title={site.name}>
+  <!-- Hero -->
+  <section class="relative z-20 max-w-2xl mx-auto my-12 px-7 md:px-0 text-center">
+    <h1 class="text-4xl font-bold leading-tight tracking-tight uppercase sm:text-5xl text-neutral-900 dark:text-neutral-100">{site.heroTitle}</h1>
+    <p class="mt-3 text-base text-neutral-600 dark:text-neutral-400">{site.slogan}</p>
+    <p class="mt-6 text-left text-sm border-l-4 border-orange-400 pl-4 py-2 text-neutral-500 dark:text-neutral-400">{site.intro}</p>
+  </section>
+
+  <!-- 社交链接 Logo 循环（小巧居中，仿原站社交图标条） -->
+  <section class="relative z-20 mb-12 text-center">
+    <div class="mx-auto w-fit">
+      <LogoLoop client:visible logos={socialLogos} width={180} speed={40} logoHeight={22} gap={24} pauseOnHover scaleOnHover ariaLabel="社交链接" />
+    </div>
+  </section>
+
+  <!-- 我写的文章（徽章式区块标题） -->
+  <div class="relative flex items-center justify-center w-full max-w-4xl mx-auto my-3 text-center">
+    <div class="absolute z-10 inline-flex items-center px-3 py-1.5 space-x-1 text-xs uppercase tracking-widest border rounded-full bg-white dark:bg-neutral-900 text-neutral-500 border-neutral-100 dark:border-neutral-800 shadow-sm">
+      <p class="leading-none">我写的文章</p>
+    </div>
+    <div class="w-full border-t border-dashed border-neutral-300 dark:border-neutral-600"></div>
+  </div>
+
+  <section class="max-w-4xl mx-auto px-7 lg:px-0">
+    <h2 class="text-2xl font-bold leading-10 tracking-tight text-neutral-900 dark:text-neutral-100">文章</h2>
+    <!-- 胶囊筛选 -->
+    <div class="flex flex-col gap-4 mt-4">
+      <FilterPills client:visible title="分类" items={cats} baseHref="/posts" />
+      <FilterPills client:visible title="标签" items={tags} baseHref="/posts" />
+    </div>
+  </section>
+
+  <!-- 文章卡片流 -->
+  <div class="w-full max-w-4xl mx-auto my-7 xl:px-0 px-7">
+    <div class="flex flex-col items-start justify-start md:flex-row md:space-x-7">
+      <div class="w-full space-y-7">
+        {latest.map((post) => <PostItem post={post} />)}
+      </div>
+    </div>
+  </div>
+
+  <!-- 我做的项目（徽章式区块标题） -->
+  <div class="relative flex items-center justify-center w-full max-w-4xl mx-auto my-3 mt-12 text-center">
+    <div class="absolute z-10 inline-flex items-center px-3 py-1.5 space-x-1 text-xs uppercase tracking-widest border rounded-full bg-white dark:bg-neutral-900 text-neutral-500 border-neutral-100 dark:border-neutral-800 shadow-sm">
+      <p class="leading-none">我做的项目</p>
+    </div>
+    <div class="w-full border-t border-dashed border-neutral-300 dark:border-neutral-600"></div>
+  </div>
+
+  <section class="max-w-4xl mx-auto px-7 lg:px-0">
+    <h2 class="text-2xl font-bold leading-10 tracking-tight text-neutral-900 dark:text-neutral-100">项目</h2>
+    <div class="grid items-stretch w-full grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-7 mt-7">
+      {projects.map((p) => (
+        <a href={p.link} target="_blank" rel="noopener" class="relative flex flex-col items-stretch duration-300 ease-out p-7 sm:p-3 group h-100 rounded-2xl">
+          <span class="absolute inset-0 z-20 block w-full h-full duration-300 ease-out bg-transparent border border-transparent border-dashed group-hover:-translate-x-1 group-hover:-translate-y-1 group-hover:border group-hover:border-neutral-300 dark:group-hover:border-neutral-600 group-hover:border-dashed rounded-2xl group-hover:bg-white dark:group-hover:bg-neutral-950"></span>
+          <span class="absolute inset-0 z-10 block w-full h-full duration-300 ease-out border border-dashed rounded-2xl border-neutral-300 dark:border-neutral-600 group-hover:translate-x-1 group-hover:translate-y-1"></span>
+          <span class="relative z-30 block duration-300 ease-out group-hover:-translate-x-1 group-hover:-translate-y-1">
+            <span class="block font-bold text-neutral-900 dark:text-neutral-100">{p.name}</span>
+            <span class="block mt-1 text-sm text-neutral-600 dark:text-neutral-400">{p.desc}</span>
+          </span>
+        </a>
+      ))}
+    </div>
+  </section>
+</Layout>

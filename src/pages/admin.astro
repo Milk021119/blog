@@ -1,0 +1,41 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="博客后台">
+  <div class="max-w-4xl mx-auto py-16 px-4 text-center">
+    <h1 class="text-3xl font-bold mb-6 dark:text-white">博客后台</h1>
+    <p class="text-neutral-600 dark:text-neutral-400 mb-8">
+      使用可视化编辑器管理你的文章
+    </p>
+
+    <a
+      href="/admin/index.html"
+      class="inline-flex items-center gap-2 px-6 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors font-medium"
+    >
+      打开编辑器
+    </a>
+
+    <div class="mt-12 p-6 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+      <h2 class="text-lg font-semibold mb-4 dark:text-white">使用说明</h2>
+      <ul class="text-left text-sm text-neutral-600 dark:text-neutral-400 space-y-2">
+        <li>1. 编辑器会从左侧打开</li>
+        <li>2. 可以创建、编辑、删除文章</li>
+        <li>3. 保存后会自动提交到 Git</li>
+        <li>4. 推送后网站会自动更新</li>
+      </ul>
+    </div>
+  </div>
+</Layout>
+
+<script>
+  import { TinaCMS, TinaProvider, useCMS } from 'tinacms';
+
+  window.TinaCMS = TinaCMS;
+</script>
+
+<style is:global>
+  .tina-sidebar {
+    background: #1a1a1a !important;
+  }
+</style>

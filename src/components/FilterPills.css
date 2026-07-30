@@ -1,0 +1,107 @@
+/* FilterPills —— 胶囊式筛选组件样式 */
+
+.filter-pills-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.filter-pills-title {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-neutral-400);
+}
+
+.filter-pills-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.filter-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.875rem;
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1;
+  color: var(--color-neutral-600);
+  background: transparent;
+  border: 1px dashed var(--color-neutral-300);
+  border-radius: 9999px;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.dark .filter-pill {
+  color: var(--color-neutral-400);
+  border-color: var(--color-neutral-700);
+}
+
+.filter-pill:hover {
+  color: var(--color-orange-500);
+  border-color: var(--color-orange-400);
+  background: var(--color-orange-50);
+  border-style: solid;
+}
+
+.dark .filter-pill:hover {
+  background: rgba(249, 115, 22, 0.1);
+}
+
+/* 全部按钮样式 */
+.filter-pill--all {
+  background: var(--color-neutral-100);
+  border-style: solid;
+}
+
+.dark .filter-pill--all {
+  background: var(--color-neutral-800);
+}
+
+/* 选中/激活态 */
+.filter-pill.is-active {
+  color: white;
+  background: var(--color-orange-500);
+  border-color: var(--color-orange-500);
+  border-style: solid;
+}
+
+.filter-pill.is-active .filter-pill-count {
+  background: rgba(255, 255, 255, 0.25);
+  color: white;
+}
+
+.filter-pill-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.25rem;
+  height: 1.125rem;
+  padding: 0 0.375rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  background: var(--color-neutral-200);
+  border-radius: 9999px;
+  color: var(--color-neutral-500);
+  transition: all 0.2s ease;
+}
+
+.dark .filter-pill-count {
+  background: var(--color-neutral-700);
+  color: var(--color-neutral-400);
+}
+
+.filter-pill:hover .filter-pill-count {
+  background: var(--color-orange-100);
+  color: var(--color-orange-600);
+}
+
+.dark .filter-pill:hover .filter-pill-count {
+  background: rgba(249, 115, 22, 0.2);
+  color: var(--color-orange-400);
+}

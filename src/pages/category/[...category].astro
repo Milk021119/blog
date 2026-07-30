@@ -1,0 +1,35 @@
+---
+import { getCollection } from 'astro:content';
+import Layout from '../../layouts/Layout.astro';
+import PostItem from '../../components/PostItem.astro';
+import { site } from '../../site';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('posts', ({ data }) => !data.draft);
+  const cats = [...new Set(posts.map((p) => p.data.category))];
+  return cats.map((cat) => ({
+    params: { category: cat },
+    props: { category: cat },
+  }));
+}
+
+const { category } = Astro.props;
+const posts = (await getCollection('posts', ({ data }) => !data.draft && data.category === category))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
+---
+<Layout title={`${category} · ${site.name}`}>
+  <section class="max-w-4xl mx-auto px-7 lg:px-0 my-12">
+    <h2 class="text-2xl font-bold leading-10 tracking-tight text-neutral-900 dark:text-neutral-100">
+      分类：{category}
+    </h2>
+    <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">{posts.length} 篇文章</p>
+  </section>
+
+  <div class="w-full max-w-4xl mx-auto my-7 xl:px-0 px-7">
+    <div class="flex flex-col items-start justify-start md:flex-row md:space-x-7">
+      <div class="w-full space-y-7">
+        {posts.map((post) => <PostItem post={post} />)}
+      </div>
+    </div>
+  </div>
+</Layout>

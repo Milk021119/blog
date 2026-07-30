@@ -1,0 +1,4 @@
+/* 全局样式说明：本工程直接引用 diygod.cc 原版 CSS（见 Layout.astro 的
+   <link href="/_astro/_slug_.BO2eiwd2.css"> 和 _slug_.CdTi_Fns.css），
+   该文件是完整的 Tailwind 产物，包含全部工具类、dark 规则与 prose 排版。
+   此处不再让 Tailwind 按需生成，避免与原版类冲突。 */
