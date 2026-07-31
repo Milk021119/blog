@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-/* 全局样式说明：本工程直接引用 diygod.cc 原版 CSS（见 Layout.astro 的
-   <link href="/_astro/_slug_.BO2eiwd2.css"> 和 _slug_.CdTi_Fns.css），
-   该文件是完整的 Tailwind 产物，包含全部工具类、dark 规则与 prose 排版。
-   此处不再让 Tailwind 按需生成，避免与原版类冲突。 */
+/* 项目用 <html class="dark"> 手动切换深色模式（见 Layout.astro 的
+   darkToggle 脚本），而非跟随系统 prefers-color-scheme，
+   所以需要显式声明基于 class 的 dark 变体。 */
+@custom-variant dark (&:where(.dark, .dark *));
